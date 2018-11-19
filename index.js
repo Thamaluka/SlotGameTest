@@ -1,5 +1,5 @@
 
-var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+//var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
 
 let app = new PIXI.Application({
     antialias: true,
@@ -9,7 +9,7 @@ let app = new PIXI.Application({
 });
 
 app.renderer.backgroundColor = 0x1099bb;
-document.body.appendChild(app.view);
+document.getElementById('game').appendChild(app.view);
 
 let loader = PIXI.loader;
 let reels, buttonBar;
