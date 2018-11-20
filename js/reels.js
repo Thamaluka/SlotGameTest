@@ -76,8 +76,6 @@ class Reels {
     }
 
 
-
-
     setSymbols() {
         for (var i = 0; i < 3; i++) {
             this.rc = new PIXI.Container();
@@ -138,7 +136,6 @@ class Reels {
                 this.reelCount = 0;
                 clearInterval(this.REEL_DELAY);
             }
-
         }, 500);
 
         let ALL_REELS_STOP = setInterval(() => {
@@ -244,6 +241,9 @@ class Reels {
         if (symbols[0][3] && symbols[1][3] && symbols[2][3]) { this.familyBar = true; this.familyBarCenter = true; }
         if (symbols[0][5] && symbols[1][5] && symbols[2][5]) { this.familyBar = true; this.familyBarBottom = true; }
 
+        if ((symbols[0][1] & 1) + (symbols[1][1] & 1) + (symbols[2][1] & 1) < 2) { console.log("TOP") }
+        if ((symbols[0][3] & 1) + (symbols[1][3] & 1) + (symbols[2][3] & 1) < 2) { console.log("CENTER") }
+        if ((symbols[0][5] & 1) + (symbols[1][5] & 1) + (symbols[2][5] & 1) < 2) { console.log("BOTTON") }
 
 
         this.checkPrizes(symbolOnTop, symbolOnBottom, symbolOnCenter);
