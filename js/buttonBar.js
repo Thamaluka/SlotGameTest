@@ -3,63 +3,102 @@ class ButtonBar {
     constructor(app) {
 
         this.game = app;
+        var bg = PIXI.Sprite.fromImage('assets/layer.png');
+        bg.position.y = 420;
+        this.game.stage.addChild(bg);
 
+        this.inputBalance = document.getElementById('balance');
     }
 
     setup() {
+
         this.buttonPlay = PIXI.Sprite.fromImage('assets/buttonPlay.png');
         this.buttonPlay.height = 100;
         this.buttonPlay.width = 100;
         this.buttonPlay.anchor.set(0.5);
-        this.buttonPlay.position.x = app.screen.width / 2;
-        this.buttonPlay.position.y = (window.innerHeight / 2 + this.buttonPlay.height / 2);
+        this.buttonPlay.position.x = 800 - this.buttonPlay.width;
+        this.buttonPlay.position.y = (600 / 2) * 2 - (this.buttonPlay.height);
         this.buttonPlay.interactive = true;
         this.buttonPlay.buttonMode = true;
 
         this.style = new PIXI.TextStyle({
             fontFamily: 'Arial',
-            fontSize: 25,
+            fontSize: 20,
+            wordWrap: true,
+            wordWrapWidth: 440,
+            fill: ['#FFFF00'],
+
+        });
+
+        this.style2 = new PIXI.TextStyle({
+            fontFamily: 'Arial',
+            fontSize: 30,
             fontWeight: 'bold',
             dropShadowAngle: Math.PI / 6,
             wordWrap: true,
-            wordWrapWidth: 440
+            wordWrapWidth: 440,
+            fill: ['#FFFFFF'],
+            align: 'center',
         });
 
+
         this.totalWin = 0;
-        this.balance = 50000;
+        this.balance = 50;
 
-        this.totalWinText = new PIXI.Text('TOTAL WIN: ' + this.totalWin, this.style);
-        this.balanceText = new PIXI.Text('BALANCE: ' + this.balance, this.style);
+        this.totalWinText = new PIXI.Text('€ 0', this.style2);
 
-        this.totalWinText.x = 30;
-        this.totalWinText.y = this.buttonPlay.y;
+        this.balanceText = new PIXI.Text('€ ' + this.balance, this.style2);
 
-        this.balanceText.x = 30;
-        this.balanceText.y = this.buttonPlay.y - 30;
+        this.cashLabelTxt = new PIXI.Text('CASH ', this.style);
+        this.balanceLabelTxt = new PIXI.Text('BALANCE ', this.style);
+
+        this.totalWinText.x = 150;
+        this.totalWinText.y = 460;
+
+
+        this.balanceText.x = 400;
+        this.balanceText.y = 460;
+
+        this.cashLabelTxt.x = 150;
+        this.cashLabelTxt.y = this.buttonPlay.y;
+
+        this.balanceLabelTxt.x = 400;
+        this.balanceLabelTxt.y = this.buttonPlay.y;
 
 
 
         this.game.stage.addChild(this.buttonPlay);
+        this.game.stage.addChild(this.cashLabelTxt);
+        this.game.stage.addChild(this.balanceLabelTxt);
         this.game.stage.addChild(this.totalWinText);
         this.game.stage.addChild(this.balanceText);
 
     }
 
-    setTotalWin(value) {
+    setWinnings(value) {
         this.totalWin += value;
-        this.totalWinText = new PIXI.Text('TOTAL WIN: ' + this.totalWin, this.style);
-        this.totalWinText.x = 30;
-        this.totalWinText.y = this.buttonPlay.y;
-        this.game.stage.addChild(this.totalWinText);
+        this.totalWinText.text = ("€ " + this.totalWin);
+        if (this.totalWin > 0) {
+            this.winsBalance(value);
+        }
     };
 
-    setBalance(value) {
-        this.balance += value;
-        this.balanceText = new PIXI.Text('BALANCE: ' + this.balance, this.style);
-        this.balanceText.x = 30;
-        this.balanceText.y = this.buttonPlay.y - 30;
-        this.game.stage.addChild(this.balanceText);
+    clearTotalWin() {
+        this.totalWin = 0;
+        this.totalWinText.text = ("€ " + this.totalWin);
+    }
+
+    playBalance(value) {
+        this.balance -= value;
+        this.balanceText.text = ("€ " + this.balance);
     };
+
+    winsBalance(value) {
+        this.balance += value;
+        this.balanceText.text = ("€ " + this.balance);
+    };
+
+
 
 
 

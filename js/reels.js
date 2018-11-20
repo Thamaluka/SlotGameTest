@@ -2,8 +2,8 @@ class Reels {
 
     constructor(app) {
         this.game = app;
-        var bg = PIXI.Sprite.fromImage('assets/reels-container.png');
-        bg.height = 400;
+        var bg = PIXI.Sprite.fromImage('assets/border.png');
+        bg.height = 405;
         bg.width = 800;
         this.game.stage.addChild(bg);
 
@@ -12,6 +12,8 @@ class Reels {
 
 
         this.running = false;
+        this.isDebug = false;
+        this.debugSymbols;
 
         this.reelMask = new PIXI.Graphics();
         this.reelMask.beginFill(0x000000, 0.6);
@@ -26,15 +28,15 @@ class Reels {
         this.SYMBOL_SIZE = 141;
 
         this.paylineTop = PIXI.Sprite.fromImage('assets/payline.png');
-        this.paylineTop.position.y = this.SYMBOL_SIZE / 2;
+        this.paylineTop.position.y = this.SYMBOL_SIZE / 2 - 10;
         this.paylineTop.visible = false;
 
-        this.paylineCenter = PIXI.Sprite.fromImage('assets/payline.png');
-        this.paylineCenter.position.y = this.SYMBOL_SIZE + (this.SYMBOL_SIZE / 2);
+        this.paylineCenter = PIXI.Sprite.fromImage('assets/payline1.png');
+        this.paylineCenter.position.y = this.SYMBOL_SIZE + (this.SYMBOL_SIZE / 2) - 10;
         this.paylineCenter.visible = false;
 
-        this.paylineBottom = PIXI.Sprite.fromImage('assets/payline.png');
-        this.paylineBottom.position.y = this.SYMBOL_SIZE * 2 + (this.SYMBOL_SIZE / 2);
+        this.paylineBottom = PIXI.Sprite.fromImage('assets/payline2.png');
+        this.paylineBottom.position.y = this.SYMBOL_SIZE * 2 + (this.SYMBOL_SIZE / 2) - 10;
         this.paylineBottom.visible = false;
 
         this.game.stage.addChild(this.paylineTop);
@@ -62,12 +64,19 @@ class Reels {
 
 
         this.buttonBar.buttonPlay.on('pointerdown', () => {
-            this.startPlay();
+            if (this.isDebug) {
+                this.playDebug();
+            } else
+                if (this.buttonBar.balance > 0)
+                    this.startPlay();
         });
 
         this.game.ticker.add(() => { this.update() })
 
     }
+
+
+
 
     setSymbols() {
         for (var i = 0; i < 3; i++) {
@@ -107,34 +116,47 @@ class Reels {
 
     }
 
-    startPlay() {
-        let reelCount = 0;
-        let symbolCount = 0;
+    playDebug() {
+        console.log("DEBUG MODE")
+        this.start();
 
-        let REEL_DELAY = setInterval(() => {
-            reelCount++;
+
+    }
+
+    startPlay() {
+        this.paylineTop.visible = false;
+        this.paylineCenter.visible = false;
+        this.paylineBottom.visible = false;
+        this.buttonBar.playBalance(1);
+        this.buttonBar.clearTotalWin();
+        this.reelCount = 0;
+
+        this.REEL_DELAY = setInterval(() => {
+            this.reelCount++;
             this.start();
-            if (reelCount == this.reels.length - 1)
-                clearInterval(REEL_DELAY);
+            if (this.reelCount == this.reels.length - 1) {
+                this.reelCount = 0;
+                clearInterval(this.REEL_DELAY);
+            }
+
         }, 500);
 
-        let REELS_STOP = setInterval(() => {
+        let ALL_REELS_STOP = setInterval(() => {
+            clearInterval(ALL_REELS_STOP);
             this.running = false;
-            clearInterval(REELS_STOP);
             this.checkWinningsPosition();
         }, 2000);
 
 
         this.start = (() => {
-            for (let i = 0; i < this.reels[reelCount].symbols.length - 1; i++) {
+            for (let i = 0; i < this.reels[this.reelCount].symbols.length - 1; i++) {
                 let previousSymbol;
-                let atualSymbol = this.reels[reelCount].symbols[i];
-                let netxSymbol = this.reels[reelCount].symbols[i + 1];
-
+                let atualSymbol = this.reels[this.reelCount].symbols[i];
+                let netxSymbol = this.reels[this.reelCount].symbols[i + 1];
                 if (i == 0) {
-                    previousSymbol = this.reels[reelCount].symbols[this.reels[reelCount].symbols.length - 1];
+                    previousSymbol = this.reels[this.reelCount].symbols[this.reels[this.reelCount].symbols.length - 1];
                 } else {
-                    previousSymbol = this.reels[reelCount].symbols[i - 1];
+                    previousSymbol = this.reels[this.reelCount].symbols[i - 1];
                 }
                 this.running = true;
                 this.moveSymbol(previousSymbol, atualSymbol, netxSymbol);
@@ -146,11 +168,11 @@ class Reels {
 
     moveSymbol(previousSymbol, atualSymbol, netxSymbol) {
         let originalPosition = atualSymbol.symbol.position.y;
-
+        this.isMoving = false;
         let moving = setInterval(() => {
             if (atualSymbol.symbol.position.y < netxSymbol.symbol.position.y) {
                 atualSymbol.symbol.position.y += 6.0;
-
+                this.isMoving = true;
             } else {
                 netxSymbol.symbol.texture = atualSymbol.symbol.texture;
                 netxSymbol.name = atualSymbol.name;
@@ -160,13 +182,13 @@ class Reels {
                 atualSymbol.symbol.texture = previousSymbol.symbol.texture;
                 atualSymbol.name = previousSymbol.name;
                 atualSymbol.barfamily = previousSymbol.barfamily;
-                clearInterval(moving);
 
+                clearInterval(moving);
                 if (this.running) {
                     let DELAY = setInterval(() => {
                         this.moveSymbol(previousSymbol, atualSymbol, netxSymbol);
                         clearInterval(DELAY);
-                    }, 8);
+                    }, 10);
                 }
             }
         }, 10)
@@ -193,7 +215,7 @@ class Reels {
         p.push(this.reels[2].symbols[1].name, this.reels[2].symbols[1].barfamily);
         p.push(this.reels[2].symbols[2].name, this.reels[2].symbols[2].barfamily);
         payLines[2] = p;
-
+        // console.log(payLines)
         return payLines;
     }
 
@@ -204,18 +226,24 @@ class Reels {
         this.bottomPrize = false;
         this.familyBar = false;
         this.cherrySeven = false;
+
         let symbolOnTop;
         let symbolOnCenter;
         let symbolOnBottom;
+
+        this.familyBarTop = false;
+        this.familyBarCenter = false;
+        this.familyBarBottom = false;
 
         if (symbols[0][0] === symbols[1][0] && symbols[0][0] === symbols[2][0] && symbols[1][0] === symbols[2][0]) { this.topPrize = true; symbolOnTop = symbols[0][0] }
         if (symbols[0][2] === symbols[1][2] && symbols[0][2] === symbols[2][2] && symbols[1][2] === symbols[2][2]) { this.centerPrize = true; symbolOnCenter = symbols[0][2] }
         if (symbols[0][4] === symbols[1][4] && symbols[0][4] == symbols[2][4] && symbols[1][4] === symbols[2][4]) { this.bottomPrize = true; symbolOnBottom = symbols[0][4] }
 
-     
-        if (symbols[0][1] && symbols[1][1] && symbols[2][1]) { this.familyBar = true; }
-        if (symbols[0][3] && symbols[1][3] && symbols[2][3]) { this.familyBar = true; }
-        if (symbols[0][5] && symbols[1][5] && symbols[2][5]) { this.familyBar = true; }
+
+        if (symbols[0][1] && symbols[1][1] && symbols[2][1]) { this.familyBar = true; this.familyBarTop = true; }
+        if (symbols[0][3] && symbols[1][3] && symbols[2][3]) { this.familyBar = true; this.familyBarCenter = true; }
+        if (symbols[0][5] && symbols[1][5] && symbols[2][5]) { this.familyBar = true; this.familyBarBottom = true; }
+
 
 
         this.checkPrizes(symbolOnTop, symbolOnBottom, symbolOnCenter);
@@ -232,34 +260,57 @@ class Reels {
 
         this.paytable = ((symbolToPay) => {
             switch (symbolToPay) {
+
                 case 'CH':
-                    if (this.topPrize) { console.log("TOTAL WIN: " + 2000); }
-                    if (this.centerPrize) { console.log("TOTAL WIN: " + 1000); }
-                    if (this.bottomPrize) { console.log("TOTAL WIN: " + 4000); }
-                    break;
+                    if (this.topPrize) { this.buttonBar.setWinnings(2000); }
+                    if (this.centerPrize) { this.buttonBar.setWinnings(1000); }
+                    if (this.bottomPrize) { this.buttonBar.setWinnings(4000); }
                 case 'Seven':
-                    console.log("TOTAL WIN: " + 150);
+                    this.buttonBar.setWinnings(150);
                     break;
                 case '3B':
-                    console.log("TOTAL WIN: " + 50);
+                    this.buttonBar.setWinnings(50);
                     break;
                 case '2B':
-                    console.log("TOTAL WIN: " + 20);
+                    this.buttonBar.setWinnings(20);
                     break;
                 case 'BAR':
-                    console.log("TOTAL WIN: " + 10);
+                    this.buttonBar.setWinnings(10);
                     break;
             }
-            if (symbolToPay == symbolOnTop) { this.topPrize = false; }
-            if (symbolToPay == symbolOnCenter) { this.centerPrize = false }
-            if (symbolToPay == symbolOnBottom) { this.bottomPrize = false }
+            if (symbolToPay == symbolOnTop) { this.topPrize = false; this.blinkPayline(this.paylineTop) }
+            if (symbolToPay == symbolOnCenter) { this.centerPrize = false; this.blinkPayline(this.paylineCenter) }
+            if (symbolToPay == symbolOnBottom) { this.bottomPrize = false; this.blinkPayline(this.paylineBottom) }
             this.checkSetPaytable();
         });
 
-        if (this.familyBar == true) { console.log("TOTAL WIN: " + 5); }
-        if (this.cherrySeven == true) { console.log("TOTAL WIN: " + 75); }
+        if (this.familyBar == true) {
+            this.buttonBar.setWinnings(5);
+            if (this.familyBarTop) { this.blinkPayline(this.paylineTop) }
+            if (this.familyBarCenter) { this.blinkPayline(this.paylineCenter) }
+            if (this.familyBarBottom) { this.blinkPayline(this.paylineBottom) }
+        }
+        if (this.cherrySeven == true) { this.buttonBar.setWinnings(75); }
         this.checkSetPaytable();
 
+    }
+
+    blinkPayline(payline) {
+        payline.visible = true;
+        let index = 0;
+
+        let blinking = setInterval(() => {
+            if (index % 2 == 0) {
+                payline.visible = !payline.visible;
+            }
+            index++;
+            if (index == 8) { clearInterval(blinking) }
+        }, 100)
+
+    }
+
+    getDebugSymbol(value) {
+        this.debugSymbols = value.split('|');
     }
 
     update() {

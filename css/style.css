@@ -1,7 +1,10 @@
-/* body {
-    height: 90vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-} */
+body {
+    background-image: url("../assets/background.png");
+    background-repeat: no-repeat, repeat;
+    background-size: 100%;
+    background-color: #cccccc;
+ }
 
+ col{
+    background-image: url("../assets/BAR.png");
+ }
