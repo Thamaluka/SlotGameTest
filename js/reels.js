@@ -232,6 +232,10 @@ class Reels {
         this.familyBarCenter = false;
         this.familyBarBottom = false;
 
+        this.cherrySevenBarTop = false;
+        this.cherrySevenBarCenter = false;
+        this.cherrySevenBarBottom = false;
+
         if (symbols[0][0] === symbols[1][0] && symbols[0][0] === symbols[2][0] && symbols[1][0] === symbols[2][0]) { this.topPrize = true; symbolOnTop = symbols[0][0] }
         if (symbols[0][2] === symbols[1][2] && symbols[0][2] === symbols[2][2] && symbols[1][2] === symbols[2][2]) { this.centerPrize = true; symbolOnCenter = symbols[0][2] }
         if (symbols[0][4] === symbols[1][4] && symbols[0][4] == symbols[2][4] && symbols[1][4] === symbols[2][4]) { this.bottomPrize = true; symbolOnBottom = symbols[0][4] }
@@ -240,10 +244,10 @@ class Reels {
         if (symbols[0][1] && symbols[1][1] && symbols[2][1]) { this.familyBar = true; this.familyBarTop = true; }
         if (symbols[0][3] && symbols[1][3] && symbols[2][3]) { this.familyBar = true; this.familyBarCenter = true; }
         if (symbols[0][5] && symbols[1][5] && symbols[2][5]) { this.familyBar = true; this.familyBarBottom = true; }
-
-        if ((symbols[0][1] & 1) + (symbols[1][1] & 1) + (symbols[2][1] & 1) < 2) { console.log("TOP") }
-        if ((symbols[0][3] & 1) + (symbols[1][3] & 1) + (symbols[2][3] & 1) < 2) { console.log("CENTER") }
-        if ((symbols[0][5] & 1) + (symbols[1][5] & 1) + (symbols[2][5] & 1) < 2) { console.log("BOTTON") }
+  
+        if ((symbols[0][1] & 1) + (symbols[1][1] & 1) + (symbols[2][1] & 1) > 2) { this.cherrySevenBarTop = true; }
+        if ((symbols[0][3] & 1) + (symbols[1][3] & 1) + (symbols[2][3] & 1) > 2) { this.cherrySevenBarCenter = true; }
+        if ((symbols[0][5] & 1) + (symbols[1][5] & 1) + (symbols[2][5] & 1) > 2) { this.cherrySevenBarBottom = true; }
 
 
         this.checkPrizes(symbolOnTop, symbolOnBottom, symbolOnCenter);
@@ -290,7 +294,12 @@ class Reels {
             if (this.familyBarCenter) { this.blinkPayline(this.paylineCenter) }
             if (this.familyBarBottom) { this.blinkPayline(this.paylineBottom) }
         }
-        if (this.cherrySeven == true) { this.buttonBar.setWinnings(75); }
+        if (this.cherrySeven == true) {
+            this.buttonBar.setWinnings(75);
+            if (this.cherrySevenBarTop) { this.blinkPayline(this.paylineTop) }
+            if (this.cherrySevenBarCenter) { this.blinkPayline(this.paylineCenter) }
+            if (this.cherrySevenBarBottom) { this.blinkPayline(this.paylineBottom) }
+        }
         this.checkSetPaytable();
 
     }
