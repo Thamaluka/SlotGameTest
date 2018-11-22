@@ -49,7 +49,7 @@ class ButtonBar {
 
         this.balanceText = new PIXI.Text('€ ' + this.balance, this.style2);
 
-        this.cashLabelTxt = new PIXI.Text('CASH ', this.style);
+        this.cashLabelTxt = new PIXI.Text('WINS ', this.style);
         this.balanceLabelTxt = new PIXI.Text('BALANCE ', this.style);
 
         this.totalWinText.x = 150;

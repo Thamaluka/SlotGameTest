@@ -26,6 +26,10 @@ class Reels {
     setup() {
         this.REEL_WIDTH = 265;
         this.SYMBOL_SIZE = 141;
+        this.DELAY_START_REEL = 500;
+        this.DELAY_STOP_REELS = 2000;
+        this.DELAY_STOP_REEL = 500;
+        this.DELAY_MOVE_SYMBOLS = 10;
 
         this.paylineTop = PIXI.Sprite.fromImage('assets/payline.png');
         this.paylineTop.position.y = this.SYMBOL_SIZE / 2 - 10;
@@ -64,11 +68,8 @@ class Reels {
 
 
         this.buttonBar.buttonPlay.on('pointerdown', () => {
-            if (this.isDebug) {
-                this.playDebug();
-            } else
-                if (this.buttonBar.balance > 0)
-                    this.startPlay();
+            if (this.buttonBar.balance > 0)
+                this.startPlay();
         });
 
         this.game.ticker.add(() => { this.update() })
@@ -114,12 +115,6 @@ class Reels {
 
     }
 
-    playDebug() {
-        console.log("DEBUG MODE")
-        this.start();
-
-
-    }
 
     startPlay() {
         this.paylineTop.visible = false;
@@ -131,64 +126,105 @@ class Reels {
 
         this.REEL_DELAY = setInterval(() => {
             this.reelCount++;
-            this.start();
             if (this.reelCount == this.reels.length - 1) {
                 this.reelCount = 0;
                 clearInterval(this.REEL_DELAY);
+                this.start(this.thirdReel);
+            } else {
+                this.start(this.secondReel);
             }
-        }, 500);
+        }, this.DELAY_START_REEL);
 
         let ALL_REELS_STOP = setInterval(() => {
             clearInterval(ALL_REELS_STOP);
+            this.reelCount = 0;
             this.running = false;
-            this.checkWinningsPosition();
-        }, 2000);
+            if (this.isDebug) {
+                this.debug();
+            } else
+                this.checkWinningsPosition();
+        }, this.DELAY_STOP_REELS);
 
+        this.firstReel = { symbols: this.reels[0].symbols, moving: true };
+        this.secondReel = { symbols: this.reels[1].symbols, moving: true };
+        this.thirdReel = { symbols: this.reels[2].symbols, moving: true };
 
-        this.start = (() => {
-            for (let i = 0; i < this.reels[this.reelCount].symbols.length - 1; i++) {
+        this.start = ((reel) => {
+
+            for (let i = 0; i < reel.symbols.length - 1; i++) {
                 let previousSymbol;
-                let atualSymbol = this.reels[this.reelCount].symbols[i];
-                let netxSymbol = this.reels[this.reelCount].symbols[i + 1];
+                let atualSymbol = reel.symbols[i];
+                let netxSymbol = reel.symbols[i + 1];
+
                 if (i == 0) {
-                    previousSymbol = this.reels[this.reelCount].symbols[this.reels[this.reelCount].symbols.length - 1];
+                    previousSymbol = reel.symbols[reel.symbols.length - 1];
                 } else {
-                    previousSymbol = this.reels[this.reelCount].symbols[i - 1];
+                    previousSymbol = reel.symbols[i - 1];
                 }
                 this.running = true;
-                this.moveSymbol(previousSymbol, atualSymbol, netxSymbol);
+                this.moveSymbol(previousSymbol, atualSymbol, netxSymbol, reel);
             }
+
 
         });
-        this.start();
+        this.start(this.firstReel);
     }
 
-    moveSymbol(previousSymbol, atualSymbol, netxSymbol) {
+    debug() {
+        this.running = true;
+
+        if (this.firstReel.symbols[0].name == this.debugSymbols[0]) {
+            this.firstReel.moving = false;
+        }
+
+        if (this.secondReel.symbols[0].name == this.debugSymbols[0] && this.firstReel.moving == false) {
+            this.secondReel.moving = false;
+        }
+
+        if (this.thirdReel.symbols[0].name == this.debugSymbols[0] && this.firstReel.moving == false && this.secondReel.moving == false) {
+            this.thirdReel.moving = false;
+            this.running = false;
+            this.isDebug = false;
+            this.checkWinningsPosition();
+        }
+        if (this.running) {
+            let DELAY = setInterval(() => {
+                this.debug();
+                clearInterval(DELAY);
+            }, 50);
+        }
+
+    }
+
+    moveSymbol(previousSymbol, atualSymbol, netxSymbol, reel) {
         let originalPosition = atualSymbol.symbol.position.y;
-        this.isMoving = false;
-        let moving = setInterval(() => {
-            if (atualSymbol.symbol.position.y < netxSymbol.symbol.position.y) {
-                atualSymbol.symbol.position.y += 6.0;
-                this.isMoving = true;
-            } else {
-                netxSymbol.symbol.texture = atualSymbol.symbol.texture;
-                netxSymbol.name = atualSymbol.name;
-                netxSymbol.barfamily = atualSymbol.barfamily;
 
-                atualSymbol.symbol.position.y = originalPosition;
-                atualSymbol.symbol.texture = previousSymbol.symbol.texture;
-                atualSymbol.name = previousSymbol.name;
-                atualSymbol.barfamily = previousSymbol.barfamily;
+        if (this.running && reel.moving) {
+            let moving = setInterval(() => {
+                if (atualSymbol.symbol.position.y < netxSymbol.symbol.position.y) {
+                    atualSymbol.symbol.position.y += 6.0;
 
-                clearInterval(moving);
-                if (this.running) {
+                } else {
+                    netxSymbol.symbol.texture = atualSymbol.symbol.texture;
+                    netxSymbol.name = atualSymbol.name;
+                    netxSymbol.barfamily = atualSymbol.barfamily;
+
+                    atualSymbol.symbol.position.y = originalPosition;
+                    atualSymbol.symbol.texture = previousSymbol.symbol.texture;
+                    atualSymbol.name = previousSymbol.name;
+                    atualSymbol.barfamily = previousSymbol.barfamily;
+
+                    clearInterval(moving);
                     let DELAY = setInterval(() => {
-                        this.moveSymbol(previousSymbol, atualSymbol, netxSymbol);
+                        this.moveSymbol(previousSymbol, atualSymbol, netxSymbol, reel);
                         clearInterval(DELAY);
-                    }, 10);
+                    }, this.DELAY_MOVE_SYMBOLS);
+
                 }
-            }
-        }, 10)
+            }, this.DELAY_MOVE_SYMBOLS);
+        }
+
+
     }
 
     getSymbols() {
@@ -212,7 +248,6 @@ class Reels {
         p.push(this.reels[2].symbols[1].name, this.reels[2].symbols[1].barfamily);
         p.push(this.reels[2].symbols[2].name, this.reels[2].symbols[2].barfamily);
         payLines[2] = p;
-        // console.log(payLines)
         return payLines;
     }
 
@@ -244,7 +279,7 @@ class Reels {
         if (symbols[0][1] && symbols[1][1] && symbols[2][1]) { this.familyBar = true; this.familyBarTop = true; }
         if (symbols[0][3] && symbols[1][3] && symbols[2][3]) { this.familyBar = true; this.familyBarCenter = true; }
         if (symbols[0][5] && symbols[1][5] && symbols[2][5]) { this.familyBar = true; this.familyBarBottom = true; }
-  
+
         if ((symbols[0][1] & 1) + (symbols[1][1] & 1) + (symbols[2][1] & 1) > 2) { this.cherrySevenBarTop = true; }
         if ((symbols[0][3] & 1) + (symbols[1][3] & 1) + (symbols[2][3] & 1) > 2) { this.cherrySevenBarCenter = true; }
         if ((symbols[0][5] & 1) + (symbols[1][5] & 1) + (symbols[2][5] & 1) > 2) { this.cherrySevenBarBottom = true; }

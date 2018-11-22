@@ -1,5 +1,5 @@
 TO RUN THE PROJECT:
-    - run npm install on SlotGameTest past
+    - run npm install on SlotGameTest paste
     - run npm start 
     The project will open on browser;
 
@@ -15,7 +15,5 @@ TO USE SYMBOLS DEBUG:
         -2BAR = 2B
         -BAR = BAR
         -3BAR = 3B
-    -EX: CH|2B|Seven
-    
-
- 
+    -EX: CH|3B|BAR
+    -NOTE: You must to enter with compatible reel order. All reels follow the sequence : 3B | BAR | 2B | Seven | CH 

@@ -37,6 +37,8 @@ function init() {
 function inputBalance(value) {
     if (value > 0 && value <= 5000)
         this.reels.buttonBar.winsBalance(parseInt(value));
+    else
+        console.error("Wrong Value! It must be between 0 - 5000");
 }
 
 function inputDebug(value) {
